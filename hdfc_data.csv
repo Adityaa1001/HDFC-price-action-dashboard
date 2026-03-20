@@ -1,0 +1,10 @@
+import yfinance as yf
+import pandas as pd
+
+ticker = yf.Ticker("HDFCBANK.NS")
+df = ticker.history(start="2020-01-01", end="2025-03-21", auto_adjust=True)
+df.index = pd.to_datetime(df.index)
+df.index = df.index.tz_localize(None)
+df.drop(columns=["Dividends", "Stock Splits"], inplace=True, errors='ignore')
+df.to_csv("hdfc_data.csv")
+print("Saved successfully!")
