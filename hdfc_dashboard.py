@@ -28,37 +28,26 @@ show_bb    = st.sidebar.checkbox("Show Bollinger Bands", value=True)
 # ── Load data ─────────────────────────────────────────────────
 @st.cache_data
 def load_data(start, end):
-    ticker = yf.Ticker("HDFCBANK.NS")
-    df = ticker.history(start=start, end=end, auto_adjust=True)
+    df = pd.read_csv("hdfc_data.csv", index_col=0, parse_dates=True)
     df.index = pd.to_datetime(df.index)
-    df.index = df.index.tz_localize(None)
-    df.drop(columns=["Dividends", "Stock Splits"], inplace=True, errors='ignore')
+    df = df[(df.index >= pd.Timestamp(start)) & (df.index <= pd.Timestamp(end))]
 
-    # Moving averages
     df['SMA_20']  = df['Close'].rolling(20).mean()
     df['SMA_50']  = df['Close'].rolling(50).mean()
     df['SMA_200'] = df['Close'].rolling(200).mean()
     df['EMA_20']  = df['Close'].ewm(span=20, adjust=False).mean()
-
-    # Bollinger Bands
     df['BB_Mid']   = df['Close'].rolling(20).mean()
     df['BB_Upper'] = df['BB_Mid'] + 2 * df['Close'].rolling(20).std()
     df['BB_Lower'] = df['BB_Mid'] - 2 * df['Close'].rolling(20).std()
-
-    # RSI
     delta = df['Close'].diff()
     gain  = delta.where(delta > 0, 0).rolling(14).mean()
     loss  = -delta.where(delta < 0, 0).rolling(14).mean()
     df['RSI'] = 100 - (100 / (1 + gain / loss))
-
-    # MACD
     ema12 = df['Close'].ewm(span=12, adjust=False).mean()
     ema26 = df['Close'].ewm(span=26, adjust=False).mean()
     df['MACD']        = ema12 - ema26
     df['MACD_Signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
     df['MACD_Hist']   = df['MACD'] - df['MACD_Signal']
-
-    # Patterns
     df['Body']         = abs(df['Close'] - df['Open'])
     df['Body_Range']   = df['High'] - df['Low']
     df['Upper_Shadow'] = df['High'] - df[['Close','Open']].max(axis=1)
@@ -67,10 +56,7 @@ def load_data(start, end):
     df['Hammer']           = (df['Lower_Shadow'] >= 2*df['Body']) & (df['Upper_Shadow'] <= 0.1*df['Body_Range']) & (df['Body'] > 0)
     df['Bullish_Engulfing']= (df['Close']>df['Open']) & (df['Close'].shift(1)<df['Open'].shift(1)) & (df['Close']>df['Open'].shift(1)) & (df['Open']<df['Close'].shift(1))
     df['Bearish_Engulfing']= (df['Close']<df['Open']) & (df['Close'].shift(1)>df['Open'].shift(1)) & (df['Close']<df['Open'].shift(1)) & (df['Open']>df['Close'].shift(1))
-
     return df
-
-df = load_data(start_date, end_date)
 
 # ── KPI Cards ─────────────────────────────────────────────────
 st.subheader("📊 Key Metrics")
