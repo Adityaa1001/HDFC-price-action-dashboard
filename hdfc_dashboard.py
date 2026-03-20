@@ -60,8 +60,12 @@ def load_data(start, end):
 
 # ── KPI Cards ─────────────────────────────────────────────────
 st.subheader("📊 Key Metrics")
-col1, col2, col3, col4, col5 = st.columns(5)
-col1.metric("Current Price",  f"₹{df['Close'].iloc[-1]:.2f}")
+kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
+kpi1.metric("Current Price",  f"₹{df['Close'].iloc[-1]:.2f}")
+kpi2.metric("52W High",       f"₹{df['High'].tail(252).max():.2f}")
+kpi3.metric("52W Low",        f"₹{df['Low'].tail(252).min():.2f}")
+kpi4.metric("Avg Volume",     f"{df['Volume'].mean()/1e6:.2f}M")
+kpi5.metric("RSI (latest)",   f"{df['RSI'].iloc[-1]:.1f}")
 col2.metric("52W High",       f"₹{df['High'].tail(252).max():.2f}")
 col3.metric("52W Low",        f"₹{df['Low'].tail(252).min():.2f}")
 col4.metric("Avg Volume",     f"{df['Volume'].mean()/1e6:.2f}M")
@@ -145,11 +149,11 @@ st.divider()
 
 # ── Pattern Summary ───────────────────────────────────────────
 st.subheader("🕯️ Candlestick Pattern Summary")
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Doji",              df['Doji'].sum())
-col2.metric("Hammer",            df['Hammer'].sum())
-col3.metric("Bullish Engulfing", df['Bullish_Engulfing'].sum())
-col4.metric("Bearish Engulfing", df['Bearish_Engulfing'].sum())
+p1, p2, p3, p4 = st.columns(4)
+p1.metric("Doji",              df['Doji'].sum())
+p2.metric("Hammer",            df['Hammer'].sum())
+p3.metric("Bullish Engulfing", df['Bullish_Engulfing'].sum())
+p4.metric("Bearish Engulfing", df['Bearish_Engulfing'].sum())
 
 st.divider()
 
