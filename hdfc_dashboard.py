@@ -172,6 +172,18 @@ def get_indices():
 
 @st.cache_data(ttl=3600)
 def fetch(ticker, start, end):
+    # Use local CSV for HDFC Bank to avoid rate limiting
+    if ticker in ("HDFCBANK.NS", "HDFCBANK.BO"):
+        try:
+            df = pd.read_csv("hdfc_data.csv", index_col=0, parse_dates=True)
+            df.index = pd.to_datetime(df.index)
+            if df.index.tz is not None:
+                df.index = df.index.tz_localize(None)
+            df = df[(df.index >= pd.Timestamp(start)) &
+                    (df.index <= pd.Timestamp(end))].copy()
+            return df
+        except Exception:
+            pass
     try:
         df = yf.download(ticker, start=str(start), end=str(end),
                          auto_adjust=True, progress=False)
