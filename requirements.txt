@@ -5,3 +5,4 @@ plotly
 streamlit==1.44.0
 mplfinance
 altair==4.2.2
+
