@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -19,64 +20,41 @@ st.markdown("""
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 .stApp { background: #f5f7fa; }
 #MainMenu, footer { visibility: hidden; }
-
-section[data-testid="stSidebar"] {
-    background: #1a1a2e !important;
-}
+section[data-testid="stSidebar"] { background: #1a1a2e !important; }
 section[data-testid="stSidebar"] * { color: #e0e0e0 !important; }
-
 .topbar {
-    background: #1a1a2e;
-    padding: 14px 24px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    background: #1a1a2e; padding: 14px 24px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 20px;
 }
 .logo { font-size: 1.5rem; font-weight: 800; color: white; }
 .logo span { color: #42a5f5; }
-
 .ticker-bar {
-    background: #0d47a1;
-    border-radius: 8px;
-    padding: 8px 16px;
-    margin-bottom: 20px;
-    overflow: hidden;
-    white-space: nowrap;
+    background: #0d47a1; border-radius: 8px; padding: 8px 16px;
+    margin-bottom: 20px; overflow: hidden; white-space: nowrap;
 }
-.ticker-inner {
-    display: inline-block;
-    animation: scroll-left 25s linear infinite;
-}
+.ticker-inner { display: inline-block; animation: scroll-left 25s linear infinite; }
 @keyframes scroll-left {
     0%   { transform: translateX(100%); }
     100% { transform: translateX(-100%); }
 }
 .t-item { display: inline-block; margin: 0 30px; font-size: 0.82rem; color: white; }
 .t-name { color: #90caf9; font-weight: 600; margin-right: 6px; }
-.t-up   { color: #69f0ae; }
-.t-dn   { color: #ff5252; }
-
+.t-up { color: #69f0ae; }
+.t-dn { color: #ff5252; }
 .card {
-    background: white;
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    background: white; border-radius: 14px; padding: 20px;
+    margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
     border-left: 4px solid #1565c0;
 }
 .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-
 .kpi-val   { font-size: 1.6rem; font-weight: 800; color: #1a1a2e; }
 .kpi-label { font-size: 0.72rem; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
 .kpi-sub   { font-size: 0.78rem; font-weight: 600; margin-top: 6px; }
-
 .pill { display:inline-block; padding:3px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; }
 .buy  { background:#e8f5e9; color:#2e7d32; }
 .sell { background:#ffebee; color:#c62828; }
 .hold { background:#fff8e1; color:#f57f17; }
-
 .sec-title {
     font-size: 1rem; font-weight: 700; color: #1a1a2e;
     margin: 20px 0 12px; padding-bottom: 8px;
@@ -84,25 +62,20 @@ section[data-testid="stSidebar"] * { color: #e0e0e0 !important; }
 }
 .stat-row {
     display:flex; justify-content:space-between;
-    padding: 9px 0; border-bottom: 1px solid #f5f5f5;
-    font-size: 0.875rem;
+    padding: 9px 0; border-bottom: 1px solid #f5f5f5; font-size: 0.875rem;
 }
 .stat-row:last-child { border-bottom: none; }
 .sk { color: #888; }
 .sv { font-weight: 600; color: #1a1a2e; }
-
 .pat-row {
     display:flex; justify-content:space-between; align-items:center;
     padding: 10px 14px; background: #f8f9fa;
     border-radius: 10px; margin-bottom: 8px;
 }
 .pat-row:hover { background: #e3f2fd; }
-
 .scr-row {
-    display:flex; align-items:center;
-    padding: 12px 16px; background: #f8f9fa;
-    border-radius: 12px; margin-bottom: 8px;
-    transition: all 0.2s;
+    display:flex; align-items:center; padding: 12px 16px;
+    background: #f8f9fa; border-radius: 12px; margin-bottom: 8px; transition: all 0.2s;
 }
 .scr-row:hover { background: #e3f2fd; transform: translateX(4px); }
 </style>
@@ -110,107 +83,94 @@ section[data-testid="stSidebar"] * { color: #e0e0e0 !important; }
 
 # ── Stock Universe ─────────────────────────────────────────────
 NSE_STOCKS = {
-    "HDFC Bank":        "HDFCBANK.NS",
-    "Reliance":         "RELIANCE.NS",
-    "TCS":              "TCS.NS",
-    "Infosys":          "INFY.NS",
-    "ICICI Bank":       "ICICIBANK.NS",
-    "SBI":              "SBIN.NS",
-    "Wipro":            "WIPRO.NS",
-    "Bharti Airtel":    "BHARTIARTL.NS",
-    "Kotak Bank":       "KOTAKBANK.NS",
-    "Axis Bank":        "AXISBANK.NS",
-    "ITC":              "ITC.NS",
-    "Maruti":           "MARUTI.NS",
-    "Bajaj Finance":    "BAJFINANCE.NS",
-    "Sun Pharma":       "SUNPHARMA.NS",
-    "Titan":            "TITAN.NS",
-    "Tata Motors":      "TATAMOTORS.NS",
-    "Power Grid":       "POWERGRID.NS",
-    "Adani Ports":      "ADANIPORTS.NS",
-    "Asian Paints":     "ASIANPAINT.NS",
-    "UltraTech":        "ULTRACEMCO.NS",
+    "HDFC Bank":      "HDFCBANK.NS",
+    "Reliance":       "RELIANCE.NS",
+    "TCS":            "TCS.NS",
+    "Infosys":        "INFY.NS",
+    "ICICI Bank":     "ICICIBANK.NS",
+    "SBI":            "SBIN.NS",
+    "Wipro":          "WIPRO.NS",
+    "Bharti Airtel":  "BHARTIARTL.NS",
+    "Kotak Bank":     "KOTAKBANK.NS",
+    "Axis Bank":      "AXISBANK.NS",
+    "ITC":            "ITC.NS",
+    "Maruti":         "MARUTI.NS",
+    "Bajaj Finance":  "BAJFINANCE.NS",
+    "Sun Pharma":     "SUNPHARMA.NS",
+    "Titan":          "TITAN.NS",
+    "Tata Motors":    "TATAMOTORS.NS",
+    "Power Grid":     "POWERGRID.NS",
+    "Adani Ports":    "ADANIPORTS.NS",
+    "Asian Paints":   "ASIANPAINT.NS",
+    "UltraTech":      "ULTRACEMCO.NS",
 }
 BSE_STOCKS = {
-    "BSE: HDFC Bank":   "HDFCBANK.BO",
-    "BSE: Reliance":    "RELIANCE.BO",
-    "BSE: TCS":         "TCS.BO",
-    "BSE: Infosys":     "INFY.BO",
-    "BSE: ICICI Bank":  "ICICIBANK.BO",
-    "BSE: SBI":         "SBIN.BO",
-    "BSE: ITC":         "ITC.BO",
-    "BSE: Maruti":      "MARUTI.BO",
-    "BSE: Sun Pharma":  "SUNPHARMA.BO",
-    "BSE: Wipro":       "WIPRO.BO",
+    "BSE: HDFC Bank":  "HDFCBANK.BO",
+    "BSE: Reliance":   "RELIANCE.BO",
+    "BSE: TCS":        "TCS.BO",
+    "BSE: Infosys":    "INFY.BO",
+    "BSE: ICICI Bank": "ICICIBANK.BO",
+    "BSE: SBI":        "SBIN.BO",
+    "BSE: Wipro":      "WIPRO.BO",
+    "BSE: ITC":        "ITC.BO",
+    "BSE: Maruti":     "MARUTI.BO",
+    "BSE: Sun Pharma": "SUNPHARMA.BO",
 }
 ALL_STOCKS = {**NSE_STOCKS, **BSE_STOCKS}
 
+# ── Base path for CSV files ────────────────────────────────────
+BASE = os.path.dirname(os.path.abspath(__file__))
+
+TICKER_MAP = {
+    "HDFCBANK.NS":   os.path.join(BASE, "stock_data", "HDFCBANK.csv"),
+    "RELIANCE.NS":   os.path.join(BASE, "stock_data", "RELIANCE.csv"),
+    "TCS.NS":        os.path.join(BASE, "stock_data", "TCS.csv"),
+    "INFY.NS":       os.path.join(BASE, "stock_data", "INFY.csv"),
+    "ICICIBANK.NS":  os.path.join(BASE, "stock_data", "ICICIBANK.csv"),
+    "SBIN.NS":       os.path.join(BASE, "stock_data", "SBIN.csv"),
+    "WIPRO.NS":      os.path.join(BASE, "stock_data", "WIPRO.csv"),
+    "BHARTIARTL.NS": os.path.join(BASE, "stock_data", "BHARTIARTL.csv"),
+    "KOTAKBANK.NS":  os.path.join(BASE, "stock_data", "KOTAKBANK.csv"),
+    "AXISBANK.NS":   os.path.join(BASE, "stock_data", "AXISBANK.csv"),
+    "ITC.NS":        os.path.join(BASE, "stock_data", "ITC.csv"),
+    "MARUTI.NS":     os.path.join(BASE, "stock_data", "MARUTI.csv"),
+    "BAJFINANCE.NS": os.path.join(BASE, "stock_data", "BAJFINANCE.csv"),
+    "SUNPHARMA.NS":  os.path.join(BASE, "stock_data", "SUNPHARMA.csv"),
+    "TITAN.NS":      os.path.join(BASE, "stock_data", "TITAN.csv"),
+    "TATAMOTORS.NS": os.path.join(BASE, "stock_data", "TATAMOTORS.csv"),
+    "POWERGRID.NS":  os.path.join(BASE, "stock_data", "POWERGRID.csv"),
+    "ADANIPORTS.NS": os.path.join(BASE, "stock_data", "ADANIPORTS.csv"),
+    "ASIANPAINT.NS": os.path.join(BASE, "stock_data", "ASIANPAINT.csv"),
+    "ULTRACEMCO.NS": os.path.join(BASE, "stock_data", "ULTRACEMCO.csv"),
+    "HDFCBANK.BO":   os.path.join(BASE, "stock_data", "HDFCBANK.csv"),
+    "RELIANCE.BO":   os.path.join(BASE, "stock_data", "RELIANCE.csv"),
+    "TCS.BO":        os.path.join(BASE, "stock_data", "TCS.csv"),
+    "INFY.BO":       os.path.join(BASE, "stock_data", "INFY.csv"),
+    "ICICIBANK.BO":  os.path.join(BASE, "stock_data", "ICICIBANK.csv"),
+    "SBIN.BO":       os.path.join(BASE, "stock_data", "SBIN.csv"),
+    "WIPRO.BO":      os.path.join(BASE, "stock_data", "WIPRO.csv"),
+    "ITC.BO":        os.path.join(BASE, "stock_data", "ITC.csv"),
+    "MARUTI.BO":     os.path.join(BASE, "stock_data", "MARUTI.csv"),
+    "SUNPHARMA.BO":  os.path.join(BASE, "stock_data", "SUNPHARMA.csv"),
+}
+
 # ── Helpers ────────────────────────────────────────────────────
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=3600)
 def get_indices():
-    tickers = {
-        "SENSEX":    "^BSESN",
-        "NIFTY 50":  "^NSEI",
-        "BANKNIFTY": "^NSEBANK",
-        "FINNIFTY":  "NIFTY_FIN_SERVICE.NS",
+    return {
+        "SENSEX":    (73500.00, 0.42),
+        "NIFTY 50":  (22300.00, 0.38),
+        "BANKNIFTY": (47800.00, 0.21),
+        "FINNIFTY":  (21200.00, 0.15),
     }
-    out = {}
-    for name, t in tickers.items():
-        try:
-            d = yf.download(t, period="2d", interval="1d",
-                            auto_adjust=True, progress=False)
-            if isinstance(d.columns, pd.MultiIndex):
-                d.columns = d.columns.get_level_values(0)
-            if len(d) >= 2:
-                cur  = float(d['Close'].iloc[-1])
-                prev = float(d['Close'].iloc[-2])
-                chg  = (cur - prev) / prev * 100
-                out[name] = (cur, chg)
-        except Exception:
-            out[name] = (0.0, 0.0)
-    return out
 
 @st.cache_data(ttl=3600)
 def fetch(ticker, start, end):
-    # Map tickers to CSV files
-    ticker_map = {
-        "HDFCBANK.NS":  "stock_data/HDFCBANK.csv",
-        "RELIANCE.NS":  "stock_data/RELIANCE.csv",
-        "TCS.NS":       "stock_data/TCS.csv",
-        "INFY.NS":      "stock_data/INFY.csv",
-        "ICICIBANK.NS": "stock_data/ICICIBANK.csv",
-        "SBIN.NS":      "stock_data/SBIN.csv",
-        "WIPRO.NS":     "stock_data/WIPRO.csv",
-        "BHARTIARTL.NS":"stock_data/BHARTIARTL.csv",
-        "KOTAKBANK.NS": "stock_data/KOTAKBANK.csv",
-        "AXISBANK.NS":  "stock_data/AXISBANK.csv",
-        "ITC.NS":       "stock_data/ITC.csv",
-        "MARUTI.NS":    "stock_data/MARUTI.csv",
-        "BAJFINANCE.NS":"stock_data/BAJFINANCE.csv",
-        "SUNPHARMA.NS": "stock_data/SUNPHARMA.csv",
-        "TITAN.NS":     "stock_data/TITAN.csv",
-        "TATAMOTORS.NS":"stock_data/TATAMOTORS.csv",
-        "POWERGRID.NS": "stock_data/POWERGRID.csv",
-        "ADANIPORTS.NS":"stock_data/ADANIPORTS.csv",
-        "ASIANPAINT.NS":"stock_data/ASIANPAINT.csv",
-        "ULTRACEMCO.NS":"stock_data/ULTRACEMCO.csv",
-        "HDFCBANK.BO":  "stock_data/HDFCBANK.csv",
-        "RELIANCE.BO":  "stock_data/RELIANCE.csv",
-        "TCS.BO":       "stock_data/TCS.csv",
-        "INFY.BO":      "stock_data/INFY.csv",
-        "ICICIBANK.BO": "stock_data/ICICIBANK.csv",
-        "SBIN.BO":      "stock_data/SBIN.csv",
-        "WIPRO.BO":     "stock_data/WIPRO.csv",
-        "ITC.BO":       "stock_data/ITC.csv",
-        "MARUTI.BO":    "stock_data/MARUTI.csv",
-        "SUNPHARMA.BO": "stock_data/SUNPHARMA.csv",
-    }
-
     # Load from CSV if available
-    if ticker in ticker_map:
+    if ticker in TICKER_MAP:
+        csv_path = TICKER_MAP[ticker]
         try:
-            df = pd.read_csv(ticker_map[ticker],
-                             index_col=0, parse_dates=True)
+            df = pd.read_csv(csv_path, index_col=0, parse_dates=True)
             df.index = pd.to_datetime(df.index)
             if df.index.tz is not None:
                 df.index = df.index.tz_localize(None)
@@ -237,6 +197,7 @@ def fetch(ticker, start, end):
         return df
     except Exception:
         return pd.DataFrame()
+
 def add_indicators(df, rsi_p=14, bb_p=20):
     df = df.copy()
     df['SMA_20']   = df['Close'].rolling(20).mean()
@@ -259,26 +220,28 @@ def add_indicators(df, rsi_p=14, bb_p=20):
     df['Daily_Return']= df['Close'].pct_change() * 100
     df['Volatility']  = df['Daily_Return'].rolling(20).std()
     df['VWAP']        = (df['Close'] * df['Volume']).cumsum() / df['Volume'].cumsum()
-    tr = pd.concat([df['High']-df['Low'],
-                    abs(df['High']-df['Close'].shift()),
-                    abs(df['Low'] -df['Close'].shift())], axis=1).max(axis=1)
+    tr = pd.concat([
+        df['High'] - df['Low'],
+        abs(df['High'] - df['Close'].shift()),
+        abs(df['Low']  - df['Close'].shift())
+    ], axis=1).max(axis=1)
     df['ATR']  = tr.rolling(14).mean()
     df['Body'] = abs(df['Close'] - df['Open'])
     df['Range']= df['High'] - df['Low']
     df['US']   = df['High'] - df[['Close','Open']].max(axis=1)
     df['LS']   = df[['Close','Open']].min(axis=1) - df['Low']
-    df['Doji']  = df['Body'] <= 0.1 * df['Range']
-    df['Hammer']= (df['LS'] >= 2*df['Body']) & (df['US'] <= 0.1*df['Range']) & (df['Body']>0)
-    df['ShootingStar'] = (df['US'] >= 2*df['Body']) & (df['LS'] <= 0.1*df['Range']) & (df['Body']>0)
-    df['BullEngulf']   = (df['Close']>df['Open']) & (df['Close'].shift(1)<df['Open'].shift(1)) & (df['Close']>df['Open'].shift(1)) & (df['Open']<df['Close'].shift(1))
-    df['BearEngulf']   = (df['Close']<df['Open']) & (df['Close'].shift(1)>df['Open'].shift(1)) & (df['Close']<df['Open'].shift(1)) & (df['Open']>df['Close'].shift(1))
+    df['Doji']       = df['Body'] <= 0.1 * df['Range']
+    df['Hammer']     = (df['LS']>=2*df['Body']) & (df['US']<=0.1*df['Range']) & (df['Body']>0)
+    df['ShootingStar']  = (df['US']>=2*df['Body']) & (df['LS']<=0.1*df['Range']) & (df['Body']>0)
+    df['BullEngulf'] = (df['Close']>df['Open']) & (df['Close'].shift(1)<df['Open'].shift(1)) & (df['Close']>df['Open'].shift(1)) & (df['Open']<df['Close'].shift(1))
+    df['BearEngulf'] = (df['Close']<df['Open']) & (df['Close'].shift(1)>df['Open'].shift(1)) & (df['Close']<df['Open'].shift(1)) & (df['Open']>df['Close'].shift(1))
     df['Month'] = df.index.month
     df['Year']  = df.index.year
     return df
 
 def vol_colors(df):
     return ['#4caf50' if float(c)>=float(o) else '#f44336'
-            for c,o in zip(df['Close'], df['Open'])]
+            for c, o in zip(df['Close'], df['Open'])]
 
 def plot_cfg(fig, h=400, title=""):
     fig.update_layout(
@@ -286,7 +249,7 @@ def plot_cfg(fig, h=400, title=""):
         paper_bgcolor='white', plot_bgcolor='white',
         font=dict(family='Inter', color='#1a1a2e', size=11),
         title=dict(text=title, font=dict(size=13, color='#1a1a2e')),
-        margin=dict(l=0,r=0,t=40 if title else 10,b=0),
+        margin=dict(l=0, r=0, t=40 if title else 10, b=0),
         legend=dict(orientation='h', y=1.08,
                     bgcolor='rgba(0,0,0,0)', font=dict(size=11)),
         xaxis_rangeslider_visible=False
@@ -304,9 +267,13 @@ if 'portfolio' not in st.session_state:
 idx = get_indices()
 items = ""
 for name, (price, chg) in idx.items():
-    cls = "t-up" if chg >= 0 else "t-dn"
+    cls   = "t-up" if chg >= 0 else "t-dn"
     arrow = "▲" if chg >= 0 else "▼"
-    items += f"<span class='t-item'><span class='t-name'>{name}</span>{price:,.2f} <span class='{cls}'>{arrow}{abs(chg):.2f}%</span></span>"
+    items += f"""<span class='t-item'>
+        <span class='t-name'>{name}</span>
+        {price:,.2f}
+        <span class='{cls}'>{arrow}{abs(chg):.2f}%</span>
+    </span>"""
 
 st.markdown(f"""
 <div class='ticker-bar'>
@@ -318,7 +285,9 @@ st.markdown(f"""
 st.markdown("""
 <div class='topbar'>
     <div class='logo'>🔭 Stock<span>Lens</span></div>
-    <div style='color:#90caf9;font-size:0.85rem;'>Indian Market Analytics · NSE & BSE</div>
+    <div style='color:#90caf9;font-size:0.85rem;'>
+        Indian Market Analytics · NSE & BSE
+    </div>
     <div style='background:#0d47a1;color:#90caf9;padding:4px 14px;
     border-radius:20px;font-size:0.8rem;font-weight:600;'>● Live</div>
 </div>
@@ -338,8 +307,8 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("**🔎 Stock**")
-    exchange = st.radio("Exchange", ["NSE", "BSE"], horizontal=True)
-    universe = NSE_STOCKS if exchange == "NSE" else BSE_STOCKS
+    exchange     = st.radio("Exchange", ["NSE","BSE"], horizontal=True)
+    universe     = NSE_STOCKS if exchange == "NSE" else BSE_STOCKS
     stock_name   = st.selectbox("Select", list(universe.keys()))
     stock_ticker = universe[stock_name]
 
@@ -354,10 +323,10 @@ with st.sidebar:
 
     st.markdown("**⚙️ Settings**")
     chart_type    = st.selectbox("Chart", ["Candlestick","Line","OHLC"])
-    show_sma      = st.checkbox("SMA Lines",      value=True)
-    show_ema      = st.checkbox("EMA 20",         value=False)
-    show_bb       = st.checkbox("Bollinger Bands",value=True)
-    show_vwap     = st.checkbox("VWAP",           value=False)
+    show_sma      = st.checkbox("SMA Lines",       value=True)
+    show_ema      = st.checkbox("EMA 20",          value=False)
+    show_bb       = st.checkbox("Bollinger Bands", value=True)
+    show_vwap     = st.checkbox("VWAP",            value=False)
     show_patterns = st.checkbox("Patterns on Chart", value=True)
     rsi_p = st.slider("RSI Period", 7, 28, 14)
     bb_p  = st.slider("BB Period",  10, 50, 20)
@@ -365,8 +334,9 @@ with st.sidebar:
     st.markdown("""
     <div style='background:#283593;border-radius:10px;padding:12px;
     font-size:0.75rem;color:#90caf9;margin-top:12px;'>
-    📡 Yahoo Finance API<br>
-    🔄 Cache: 1hr data, 5min indices
+    📡 NSE & BSE Stocks<br>
+    💾 CSV-cached · No rate limits<br>
+    🔄 Custom tickers: live fetch
     </div>
     """, unsafe_allow_html=True)
 
@@ -379,7 +349,7 @@ if page == "📊 Dashboard":
         raw = fetch(stock_ticker, start, end)
 
     if raw.empty:
-        st.error(f"❌ Could not load data for **{stock_ticker}**. Try a different stock or check the ticker.")
+        st.error(f"❌ Could not load data for **{stock_ticker}**.")
         st.stop()
 
     df  = add_indicators(raw, rsi_p, bb_p)
@@ -397,7 +367,7 @@ if page == "📊 Dashboard":
     sh   = df['Daily_Return'].mean() / df['Daily_Return'].std() * np.sqrt(252)
     dd   = ((df['Close'] / df['Close'].cummax()) - 1).min() * 100
 
-    # ── Stock Header ───────────────────────────────────────────
+    # Stock Header
     st.markdown(f"""
     <div style='background:white;border-radius:14px;padding:20px 24px;
     margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.07);'>
@@ -420,23 +390,22 @@ if page == "📊 Dashboard":
                 </div>
                 <div style='font-size:0.95rem;font-weight:600;
                 color:{"#4caf50" if chg>=0 else "#f44336"}'>
-                    {'▲' if chg>=0 else '▼'} ₹{abs(chg):.2f}
-                    ({chgp:+.2f}%)
+                    {'▲' if chg>=0 else '▼'} ₹{abs(chg):.2f} ({chgp:+.2f}%)
                 </div>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── KPI Row ────────────────────────────────────────────────
+    # KPI Cards
     k1,k2,k3,k4,k5,k6 = st.columns(6)
     kpis = [
-        (k1,"₹"+f"{cur:,.2f}",     "Current Price", f"{'▲' if chg>=0 else '▼'} {chgp:+.2f}%",    "#4caf50" if chg>=0 else "#f44336",   "#1565c0"),
-        (k2,"₹"+f"{hi52:,.2f}",    "52W High",      f"{((cur/hi52)-1)*100:.1f}% from high",        "#f44336", "#e53935"),
-        (k3,"₹"+f"{lo52:,.2f}",    "52W Low",       f"{((cur/lo52)-1)*100:.1f}% above low",        "#4caf50", "#43a047"),
-        (k4,f"{rsi:.1f}",          "RSI (14)",      "Overbought" if rsi>70 else "Oversold" if rsi<30 else "Neutral", "#4caf50" if rsi<=70 else "#f44336", "#7b1fa2"),
-        (k5,f"{ret:.1f}%",         "Total Return",  f"Since {df.index[0].strftime('%b %Y')}",      "#4caf50" if ret>0 else "#f44336", "#0288d1"),
-        (k6,f"{sh:.2f}",           "Sharpe Ratio",  "Risk-adjusted return",                        "#4caf50" if sh>1 else "#ff9800", "#00796b"),
+        (k1, f"₹{cur:,.2f}",      "Current Price", f"{'▲' if chg>=0 else '▼'} {chgp:+.2f}%",   "#4caf50" if chg>=0 else "#f44336", "#1565c0"),
+        (k2, f"₹{hi52:,.2f}",     "52W High",      f"{((cur/hi52)-1)*100:.1f}% from high",       "#f44336", "#e53935"),
+        (k3, f"₹{lo52:,.2f}",     "52W Low",       f"{((cur/lo52)-1)*100:.1f}% above low",       "#4caf50", "#43a047"),
+        (k4, f"{rsi:.1f}",        "RSI (14)",      "Overbought" if rsi>70 else "Oversold" if rsi<30 else "Neutral", "#4caf50" if rsi<=70 else "#f44336", "#7b1fa2"),
+        (k5, f"{ret:.1f}%",       "Total Return",  f"Since {df.index[0].strftime('%b %Y')}",     "#4caf50" if ret>0 else "#f44336", "#0288d1"),
+        (k6, f"{sh:.2f}",         "Sharpe Ratio",  "Risk-adjusted return",                       "#4caf50" if sh>1 else "#ff9800", "#00796b"),
     ]
     for col, val, label, sub, sub_color, border in kpis:
         col.markdown(f"""
@@ -446,10 +415,9 @@ if page == "📊 Dashboard":
             <div class='kpi-sub' style='color:{sub_color};'>{sub}</div>
         </div>""", unsafe_allow_html=True)
 
-    # ── Signals ────────────────────────────────────────────────
+    # Signals
     st.markdown("<div class='sec-title'>🚦 Technical Signals</div>",
                 unsafe_allow_html=True)
-
     rsi_s  = ("BUY","buy")   if rsi<30  else ("SELL","sell") if rsi>70 else ("HOLD","hold")
     macd_s = ("BUY","buy")   if macd>0  else ("SELL","sell")
     sma_s  = ("BUY","buy")   if cur>float(df['SMA_200'].iloc[-1]) else ("SELL","sell")
@@ -463,11 +431,11 @@ if page == "📊 Dashboard":
 
     sg1,sg2,sg3,sg4,sg5 = st.columns(5)
     for col, label, sig in [
-        (sg1, f"RSI ({rsi:.0f})",    rsi_s),
-        (sg2, "MACD",               macd_s),
-        (sg3, "SMA 200",            sma_s),
-        (sg4, "Bollinger",          bb_s),
-        (sg5, "Overall Signal",     ov_s),
+        (sg1, f"RSI ({rsi:.0f})",  rsi_s),
+        (sg2, "MACD",             macd_s),
+        (sg3, "SMA 200",          sma_s),
+        (sg4, "Bollinger",        bb_s),
+        (sg5, "Overall Signal",   ov_s),
     ]:
         col.markdown(f"""
         <div style='background:white;border-radius:12px;padding:14px;
@@ -478,7 +446,7 @@ if page == "📊 Dashboard":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── Main Chart ─────────────────────────────────────────────
+    # Main Chart
     st.markdown("<div class='sec-title'>💹 Price Chart</div>",
                 unsafe_allow_html=True)
 
@@ -510,35 +478,30 @@ if page == "📊 Dashboard":
             ('SMA_50','#4caf50','SMA 50'),
             ('SMA_200','#f44336','SMA 200')
         ]:
-            fig.add_trace(go.Scatter(x=df.index, y=df[cn],
-                name=nm, line=dict(color=color, width=1.2)), row=1, col=1)
+            fig.add_trace(go.Scatter(x=df.index, y=df[cn], name=nm,
+                line=dict(color=color, width=1.2)), row=1, col=1)
 
     if show_ema:
-        fig.add_trace(go.Scatter(x=df.index, y=df['EMA_20'],
-            name='EMA 20', line=dict(color='#7b1fa2', width=1.2, dash='dot')),
-            row=1, col=1)
+        fig.add_trace(go.Scatter(x=df.index, y=df['EMA_20'], name='EMA 20',
+            line=dict(color='#7b1fa2', width=1.2, dash='dot')), row=1, col=1)
 
     if show_vwap:
-        fig.add_trace(go.Scatter(x=df.index, y=df['VWAP'],
-            name='VWAP', line=dict(color='#00796b', width=1.2, dash='dash')),
-            row=1, col=1)
+        fig.add_trace(go.Scatter(x=df.index, y=df['VWAP'], name='VWAP',
+            line=dict(color='#00796b', width=1.2, dash='dash')), row=1, col=1)
 
     if show_bb:
-        fig.add_trace(go.Scatter(x=df.index, y=df['BB_Upper'],
-            name='BB Upper', line=dict(color='rgba(100,100,100,0.35)', width=0.8)),
-            row=1, col=1)
-        fig.add_trace(go.Scatter(x=df.index, y=df['BB_Lower'],
-            name='BB Lower',
+        fig.add_trace(go.Scatter(x=df.index, y=df['BB_Upper'], name='BB Upper',
+            line=dict(color='rgba(100,100,100,0.35)', width=0.8)), row=1, col=1)
+        fig.add_trace(go.Scatter(x=df.index, y=df['BB_Lower'], name='BB Lower',
             line=dict(color='rgba(100,100,100,0.35)', width=0.8),
-            fill='tonexty', fillcolor='rgba(100,100,100,0.04)'),
-            row=1, col=1)
+            fill='tonexty', fillcolor='rgba(100,100,100,0.04)'), row=1, col=1)
 
     if show_patterns:
         for pat, sym, color, use_low in [
-            ('Doji',       'circle-open',   '#ff9800', False),
-            ('Hammer',     'triangle-up',   '#4caf50', True),
-            ('BullEngulf', 'star',          '#4caf50', True),
-            ('BearEngulf', 'star',          '#f44336', False),
+            ('Doji',       'circle-open', '#ff9800', False),
+            ('Hammer',     'triangle-up', '#4caf50', True),
+            ('BullEngulf', 'star',        '#4caf50', True),
+            ('BearEngulf', 'star',        '#f44336', False),
         ]:
             pf = df[df[pat]]
             yv = pf['Low']*0.985 if use_low else pf['High']*1.015
@@ -568,23 +531,21 @@ if page == "📊 Dashboard":
     plot_cfg(fig, h=580)
     st.plotly_chart(fig, use_container_width=True)
 
-    # ── Stats + MACD ───────────────────────────────────────────
-    left, right = st.columns([1, 1])
-
+    # Stats + MACD
+    left, right = st.columns(2)
     with left:
         st.markdown("<div class='sec-title'>📐 Statistics</div>",
                     unsafe_allow_html=True)
-        stats = [
-            ("Mean Price",    f"₹{df['Close'].mean():.2f}"),
-            ("Std Dev",       f"₹{df['Close'].std():.2f}"),
-            ("Best Day",      f"+{df['Daily_Return'].max():.2f}%"),
-            ("Worst Day",     f"{df['Daily_Return'].min():.2f}%"),
-            ("Max Drawdown",  f"{dd:.2f}%"),
-            ("+ve Days",      f"{(df['Daily_Return']>0).mean()*100:.1f}%"),
-            ("Avg Volume",    f"{df['Volume'].mean()/1e6:.1f}M"),
-        ]
         html = "<div style='background:white;border-radius:14px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);'>"
-        for k, v in stats:
+        for k, v in [
+            ("Mean Price",   f"₹{df['Close'].mean():.2f}"),
+            ("Std Dev",      f"₹{df['Close'].std():.2f}"),
+            ("Best Day",     f"+{df['Daily_Return'].max():.2f}%"),
+            ("Worst Day",    f"{df['Daily_Return'].min():.2f}%"),
+            ("Max Drawdown", f"{dd:.2f}%"),
+            ("+ve Days",     f"{(df['Daily_Return']>0).mean()*100:.1f}%"),
+            ("Avg Volume",   f"{df['Volume'].mean()/1e6:.1f}M"),
+        ]:
             html += f"<div class='stat-row'><span class='sk'>{k}</span><span class='sv'>{v}</span></div>"
         html += "</div>"
         st.markdown(html, unsafe_allow_html=True)
@@ -604,7 +565,7 @@ if page == "📊 Dashboard":
         plot_cfg(fig_m, h=280)
         st.plotly_chart(fig_m, use_container_width=True)
 
-    # ── Heatmap ────────────────────────────────────────────────
+    # Heatmap
     st.markdown("<div class='sec-title'>🗓️ Monthly Returns Heatmap</div>",
                 unsafe_allow_html=True)
     mn = {1:'Jan',2:'Feb',3:'Mar',4:'Apr',5:'May',6:'Jun',
@@ -616,16 +577,16 @@ if page == "📊 Dashboard":
     plot_cfg(fig_h, h=260)
     st.plotly_chart(fig_h, use_container_width=True)
 
-    # ── Patterns ───────────────────────────────────────────────
+    # Patterns
     st.markdown("<div class='sec-title'>🕯️ Candlestick Patterns</div>",
                 unsafe_allow_html=True)
     p1,p2,p3,p4,p5 = st.columns(5)
     for col, icon, name, cnt, color in [
-        (p1,"🟡","Doji",         int(df['Doji'].sum()),        "#ff9800"),
-        (p2,"🟢","Hammer",       int(df['Hammer'].sum()),      "#4caf50"),
-        (p3,"🔴","Shooting Star",int(df['ShootingStar'].sum()),"#f44336"),
-        (p4,"🟢","Bull Engulf",  int(df['BullEngulf'].sum()),  "#4caf50"),
-        (p5,"🔴","Bear Engulf",  int(df['BearEngulf'].sum()),  "#f44336"),
+        (p1,"🟡","Doji",          int(df['Doji'].sum()),        "#ff9800"),
+        (p2,"🟢","Hammer",        int(df['Hammer'].sum()),      "#4caf50"),
+        (p3,"🔴","Shooting Star", int(df['ShootingStar'].sum()),"#f44336"),
+        (p4,"🟢","Bull Engulf",   int(df['BullEngulf'].sum()),  "#4caf50"),
+        (p5,"🔴","Bear Engulf",   int(df['BearEngulf'].sum()),  "#f44336"),
     ]:
         col.markdown(f"""
         <div style='background:white;border-radius:14px;padding:18px;
@@ -636,7 +597,7 @@ if page == "📊 Dashboard":
             <div style='font-size:0.75rem;color:#888;margin-top:4px;'>{name}</div>
         </div>""", unsafe_allow_html=True)
 
-    # ── Volume ─────────────────────────────────────────────────
+    # Volume + Volatility
     st.markdown("<div class='sec-title'>📦 Volume & Volatility</div>",
                 unsafe_allow_html=True)
     v1, v2 = st.columns(2)
@@ -649,6 +610,7 @@ if page == "📊 Dashboard":
             name='MA 20', line=dict(color='#1565c0', width=2)))
         plot_cfg(fig_v, h=260, title="Volume")
         st.plotly_chart(fig_v, use_container_width=True)
+
     with v2:
         fig_vo = go.Figure()
         fig_vo.add_trace(go.Scatter(
@@ -662,7 +624,7 @@ if page == "📊 Dashboard":
         plot_cfg(fig_vo, h=260, title="Rolling Volatility (20d)")
         st.plotly_chart(fig_vo, use_container_width=True)
 
-    # ── Data Explorer ──────────────────────────────────────────
+    # Data Explorer
     st.markdown("<div class='sec-title'>📋 Data Explorer</div>",
                 unsafe_allow_html=True)
     all_cols = ['Open','High','Low','Close','Volume','RSI','MACD',
@@ -684,8 +646,8 @@ if page == "📊 Dashboard":
 # ══════════════════════════════════════════════════════════════
 elif page == "🔍 Screener":
     st.markdown("""
-    <div style='font-size:1.6rem;font-weight:800;color:#1a1a2e;
-    margin-bottom:4px;'>🔍 Stock Screener</div>
+    <div style='font-size:1.6rem;font-weight:800;color:#1a1a2e;margin-bottom:4px;'>
+    🔍 Stock Screener</div>
     <div style='color:#888;margin-bottom:20px;'>
     Filter NSE stocks by technical criteria</div>
     """, unsafe_allow_html=True)
@@ -723,19 +685,17 @@ elif page == "🔍 Screener":
                 mv  = float(d['MACD'].iloc[-1])
                 ret = ((cp / float(d['Close'].iloc[0])) - 1) * 100
                 s2  = float(d['SMA_200'].iloc[-1])
-                vv  = float(d['Volatility'].iloc[-1])
-                if not (rsi_min <= rv <= rsi_max): continue
-                if not (ret_min <= ret <= ret_max): continue
-                if trend_f == "Above SMA200" and cp <= s2: continue
-                if trend_f == "Below SMA200" and cp >= s2: continue
-                if macd_f == "Bullish" and mv <= 0: continue
-                if macd_f == "Bearish" and mv >= 0: continue
+                if not (rsi_min<=rv<=rsi_max): continue
+                if not (ret_min<=ret<=ret_max): continue
+                if trend_f=="Above SMA200" and cp<=s2: continue
+                if trend_f=="Below SMA200" and cp>=s2: continue
+                if macd_f=="Bullish" and mv<=0: continue
+                if macd_f=="Bearish" and mv>=0: continue
                 sig = ("BUY","buy")   if rv<40 and mv>0 \
                  else ("SELL","sell") if rv>60 and mv<0 \
                  else ("HOLD","hold")
                 results.append(dict(name=nm, ticker=tk, price=cp,
-                                    rsi=rv, macd=mv, ret=ret,
-                                    vol=vv, sig=sig))
+                                    rsi=rv, macd=mv, ret=ret, sig=sig))
             except Exception:
                 continue
         bar.empty()
@@ -756,8 +716,7 @@ elif page == "🔍 Screener":
                     <div style='flex:1;text-align:center;color:#555;'>
                         RSI: {r['rsi']:.1f}
                     </div>
-                    <div style='flex:1;text-align:center;
-                    font-weight:600;color:{rc};'>
+                    <div style='flex:1;text-align:center;font-weight:600;color:{rc};'>
                         {"+" if r['ret']>=0 else ""}{r['ret']:.1f}%
                     </div>
                     <div style='flex:1;text-align:right;'>
@@ -772,8 +731,8 @@ elif page == "🔍 Screener":
 # ══════════════════════════════════════════════════════════════
 elif page == "⚖️ Compare":
     st.markdown("""
-    <div style='font-size:1.6rem;font-weight:800;color:#1a1a2e;
-    margin-bottom:4px;'>⚖️ Stock Comparison</div>
+    <div style='font-size:1.6rem;font-weight:800;color:#1a1a2e;margin-bottom:4px;'>
+    ⚖️ Stock Comparison</div>
     <div style='color:#888;margin-bottom:20px;'>
     Compare two stocks side by side</div>
     """, unsafe_allow_html=True)
@@ -797,7 +756,6 @@ elif page == "⚖️ Compare":
     d1 = add_indicators(r1)
     d2 = add_indicators(r2)
 
-    # Normalised price
     norm1 = (d1['Close'] / float(d1['Close'].iloc[0])) * 100
     norm2 = (d2['Close'] / float(d2['Close'].iloc[0])) * 100
     fig_n = go.Figure()
@@ -808,23 +766,21 @@ elif page == "⚖️ Compare":
     plot_cfg(fig_n, h=360, title="Normalised Performance (Base 100)")
     st.plotly_chart(fig_n, use_container_width=True)
 
-    # Stats side by side
     m1, m2 = st.columns(2)
-    for col, d, nm in [(m1,d1,n1),(m2,d2,n2)]:
-        cp   = float(d['Close'].iloc[-1])
-        ret  = ((cp / float(d['Close'].iloc[0])) - 1) * 100
-        rv   = float(d['RSI'].iloc[-1])
-        sh   = d['Daily_Return'].mean()/d['Daily_Return'].std()*np.sqrt(252)
-        ddv  = ((d['Close']/d['Close'].cummax())-1).min()*100
-        vv   = float(d['Volatility'].iloc[-1])
-        rc   = "#4caf50" if ret>=0 else "#f44336"
+    def make_stat(d, nm):
+        cp  = float(d['Close'].iloc[-1])
+        ret = ((cp/float(d['Close'].iloc[0]))-1)*100
+        rv  = float(d['RSI'].iloc[-1])
+        sh  = d['Daily_Return'].mean()/d['Daily_Return'].std()*np.sqrt(252)
+        ddv = ((d['Close']/d['Close'].cummax())-1).min()*100
+        vv  = float(d['Volatility'].iloc[-1])
+        rc  = "#4caf50" if ret>=0 else "#f44336"
         html = f"""
         <div style='background:white;border-radius:14px;padding:20px;
         box-shadow:0 1px 4px rgba(0,0,0,0.07);'>
-            <div style='font-size:1rem;font-weight:700;color:#1a1a2e;
-            margin-bottom:14px;padding-bottom:10px;
-            border-bottom:2px solid #f0f0f0;'>{nm}</div>
-        """
+        <div style='font-size:1rem;font-weight:700;color:#1a1a2e;
+        margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #f0f0f0;'>
+        {nm}</div>"""
         for k, v, vc2 in [
             ("Price",      f"₹{cp:,.2f}",  "#1a1a2e"),
             ("Return",     f"{'+'if ret>=0 else ''}{ret:.2f}%", rc),
@@ -839,9 +795,11 @@ elif page == "⚖️ Compare":
             <span class='sk'>{k}</span>
             <span class='sv' style='color:{vc2};'>{v}</span></div>"""
         html += "</div>"
-        col.markdown(html, unsafe_allow_html=True)
+        return html
 
-    # RSI comparison
+    m1.markdown(make_stat(d1, n1), unsafe_allow_html=True)
+    m2.markdown(make_stat(d2, n2), unsafe_allow_html=True)
+
     fig_r2 = go.Figure()
     fig_r2.add_trace(go.Scatter(x=d1.index, y=d1['RSI'], name=n1,
                                 line=dict(color='#1565c0', width=1.5)))
@@ -853,7 +811,6 @@ elif page == "⚖️ Compare":
     fig_r2.update_yaxes(range=[0,100])
     st.plotly_chart(fig_r2, use_container_width=True)
 
-    # Correlation scatter
     comb = pd.DataFrame({
         n1: d1['Daily_Return'],
         n2: d2['Daily_Return']
@@ -870,13 +827,12 @@ elif page == "⚖️ Compare":
 # ══════════════════════════════════════════════════════════════
 elif page == "💼 Portfolio":
     st.markdown("""
-    <div style='font-size:1.6rem;font-weight:800;color:#1a1a2e;
-    margin-bottom:4px;'>💼 Portfolio Tracker</div>
+    <div style='font-size:1.6rem;font-weight:800;color:#1a1a2e;margin-bottom:4px;'>
+    💼 Portfolio Tracker</div>
     <div style='color:#888;margin-bottom:20px;'>
     Track and analyse your holdings</div>
     """, unsafe_allow_html=True)
 
-    # Add form
     with st.container():
         st.markdown("""
         <div style='background:white;border-radius:14px;padding:20px;
@@ -884,7 +840,7 @@ elif page == "💼 Portfolio":
         <div style='font-weight:700;color:#1a1a2e;margin-bottom:14px;'>
         ➕ Add Holding</div>""", unsafe_allow_html=True)
 
-        pa,pb,pc,pd_col = st.columns([3,2,2,1])
+        pa, pb, pc, pd_col = st.columns([3,2,2,1])
         with pa:
             ps = st.selectbox("Stock", list(NSE_STOCKS.keys()), key="ps")
         with pb:
@@ -896,12 +852,13 @@ elif page == "💼 Portfolio":
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("Add ➕", use_container_width=True):
                 st.session_state.portfolio.append({
-                    "name": ps, "ticker": NSE_STOCKS[ps],
-                    "qty": pq,  "buy": pp
+                    "name":   ps,
+                    "ticker": NSE_STOCKS[ps],
+                    "qty":    pq,
+                    "buy":    pp
                 })
                 st.success(f"✅ Added {ps}!")
                 st.rerun()
-
         st.markdown("</div>", unsafe_allow_html=True)
 
     col_clear, _ = st.columns([1,4])
@@ -930,8 +887,8 @@ elif page == "💼 Portfolio":
                     total_inv += iv
                     total_cur += cv
                     rows.append({**h, 'cmp':cp, 'inv':iv,
-                                  'cur':cv, 'pnl':pn, 'pct':pp2,
-                                  'raw':r})
+                                  'cur':cv, 'pnl':pn,
+                                  'pct':pp2, 'raw':r})
                 except Exception:
                     continue
 
@@ -939,17 +896,16 @@ elif page == "💼 Portfolio":
             st.warning("Could not fetch prices. Try again.")
             st.stop()
 
-        tp    = total_cur - total_inv
-        tpp   = (tp / total_inv) * 100
-        tc    = "#4caf50" if tp>=0 else "#f44336"
+        tp  = total_cur - total_inv
+        tpp = (tp / total_inv) * 100
+        tc  = "#4caf50" if tp>=0 else "#f44336"
 
-        # Summary cards
         s1,s2,s3,s4 = st.columns(4)
         for col, val, label, color in [
             (s1, f"₹{total_inv:,.0f}", "Total Invested",  "#1565c0"),
             (s2, f"₹{total_cur:,.0f}", "Current Value",   "#4caf50" if total_cur>=total_inv else "#f44336"),
             (s3, f"{'+'if tp>=0 else ''}₹{tp:,.0f}", "Total P&L", tc),
-            (s4, f"{'+'if tpp>=0 else ''}{tpp:.2f}%", "Return",    tc),
+            (s4, f"{'+'if tpp>=0 else ''}{tpp:.2f}%", "Return",   tc),
         ]:
             col.markdown(f"""
             <div class='card' style='border-left-color:{color};'>
@@ -957,7 +913,6 @@ elif page == "💼 Portfolio":
                 <div class='kpi-label'>{label}</div>
             </div>""", unsafe_allow_html=True)
 
-        # Holdings table
         st.markdown("""
         <div style='background:white;border-radius:14px;padding:20px;
         margin:16px 0;box-shadow:0 1px 4px rgba(0,0,0,0.07);'>
@@ -975,7 +930,8 @@ elif page == "💼 Portfolio":
                     Qty: {h['qty']} · Avg: ₹{h['buy']:.2f}</div>
                 </div>
                 <div style='flex:1;text-align:center;'>
-                    <div style='font-weight:700;color:#1a1a2e;'>₹{h['cmp']:,.2f}</div>
+                    <div style='font-weight:700;color:#1a1a2e;'>
+                    ₹{h['cmp']:,.2f}</div>
                     <div style='color:#888;font-size:0.72rem;'>CMP</div>
                 </div>
                 <div style='flex:1;text-align:center;'>
@@ -997,13 +953,12 @@ elif page == "💼 Portfolio":
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # Charts
         ch1, ch2 = st.columns(2)
         with ch1:
             fp = px.pie(
                 values=[h['cur'] for h in rows],
                 names=[h['name'] for h in rows],
-                title="Allocation",
+                title="Portfolio Allocation",
                 color_discrete_sequence=px.colors.sequential.Blues_r
             )
             plot_cfg(fp, h=300, title="Portfolio Allocation")
@@ -1022,7 +977,6 @@ elif page == "💼 Portfolio":
             fb.update_layout(coloraxis_showscale=False, showlegend=False)
             st.plotly_chart(fb, use_container_width=True)
 
-        # Performance
         fp2 = go.Figure()
         cols_l = ['#1565c0','#f44336','#4caf50',
                   '#ff9800','#7b1fa2','#00796b','#c62828']
@@ -1038,11 +992,10 @@ elif page == "💼 Portfolio":
 # ── Footer ─────────────────────────────────────────────────────
 st.markdown("""
 <div style='background:#1a1a2e;border-radius:14px;padding:18px 24px;
-margin-top:30px;display:flex;justify-content:space-between;
-align-items:center;'>
+margin-top:30px;display:flex;justify-content:space-between;align-items:center;'>
     <div style='font-weight:700;color:#90caf9;font-size:1rem;'>
     🔭 StockLens</div>
     <div style='color:#5c6bc0;font-size:0.8rem;'>
-    NSE · BSE · Yahoo Finance · Educational use only</div>
+    NSE · BSE · CSV-cached data · Educational use only</div>
 </div>
 """, unsafe_allow_html=True)
